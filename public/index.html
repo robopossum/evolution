@@ -89,8 +89,22 @@
             class Bot extends WorldObject {
 
                 render(context, x1, y1, x2, y2) {
+                    //Debug square
+                    //context.fillStyle = 'green';
+                    //context.fillRect(x1, y1, x2, y2);
+                    x1 += this.w/2;
+                    y1 += this.w/2;
+                    context.beginPath();
                     context.fillStyle = 'white';
-                    context.fillRect(x1, y1, x2, y2);
+                    context.arc(x1, y1, this.w/2, 0, Math.PI * 2);
+                    context.fill();
+                    context.closePath();
+                    context.beginPath();
+                    context.fillStyle = 'red';
+                    context.moveTo(x1, y1);
+                    context.lineTo(x1, y1 + this.w/2);
+                    context.stroke();
+                    context.closePath();
                 }
 
             }
@@ -193,8 +207,8 @@
                     var bot = new Bot(
                         this.world.width/2,
                         this.world.height/2,
-                        10,
-                        10,
+                        40,
+                        40,
                         this.world.width,
                         this.world.height
                     );
