@@ -1,0 +1,14 @@
+{
+  "name": "evolution",
+  "version": "0.0.1",
+  "description": "Evolution of creatures using neural networking",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Bill Cousins",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.15.4"
+  }
+}

@@ -1,0 +1,248 @@
+<html>
+    <head>
+        <title>Evolution</title>
+    </head>
+    <body>
+        <canvas id="game-canvas" width="960" height="720"></canvas>
+        <script>
+
+            class WorldObject {
+
+                constructor(x, y, w, h, maxX, maxY) {
+                    this.x = x;
+                    this.y = y;
+                    this.w = w;
+                    this.h = h;
+                    this.maxX = maxX;
+                    this.maxY = maxY;
+                }
+
+                getLeftBound() {
+                    return this.x - this.w/2;
+                }
+
+                getRightBound() {
+                    return this.x + this.w/2;
+                }
+
+                getUpperBound() {
+                    return this.y - this.h/2;
+                }
+
+                getLowerBound() {
+                    return this.y + this.h/2;
+                }
+
+            }
+
+            class Camera extends WorldObject {
+
+                setZoom(zoom) {
+                    this.zoom = zoom;
+                }
+
+                getZoom() {
+                    return this.zoom;
+                }
+
+                setPanSpeed(speed) {
+                    this.panSpeed = speed;
+                }
+
+                getPanSpeed() {
+                    return this.panSpeed;
+                }
+
+                move(up, left, down, right) {
+                    this.x += (right - left) * this.panSpeed;
+                    this.y += (down - up) * this.panSpeed;
+                }
+
+                shouldRender(object) {
+                    return object.getRightBound() > this.getLeftBound()
+                        && object.getLeftBound() < this.getRightBound()
+                        && object.getUpperBound() < this.getLowerBound()
+                        && object.getLowerBound() > this.getUpperBound()
+                    ;
+                }
+
+                renderObject(context, object) {
+                    if (!this.shouldRender(object)) {
+                        return;
+                    }
+                    object.render(
+                        context,
+                        object.getLeftBound() - this.getLeftBound(),
+                        object.getUpperBound() - this.getUpperBound(),
+                        object.getRightBound() - object.getLeftBound(),
+                        object.getLowerBound() - object.getUpperBound()
+                    );
+
+                }
+
+                clear(context) {
+                    context.fillStyle = 'black';
+                    context.fillRect(0,0,this.w, this.h);
+                }
+            }
+
+            class Bot extends WorldObject {
+
+                render(context, x1, y1, x2, y2) {
+                    context.fillStyle = 'white';
+                    context.fillRect(x1, y1, x2, y2);
+                }
+
+            }
+
+            class Wall extends WorldObject {
+
+                render(context, x1, y1, x2, y2) {
+                    context.fillStyle = 'red';
+                    context.fillRect(x1, y1, x2, y2);
+                }
+
+            }
+
+            class World {
+
+                constructor(context, w, h) {
+                    this.context = context;
+                    this.width = w;
+                    this.height = h;
+                    this.objects = [];
+                }
+
+                initCamera(w, h) {
+                    this.camera = new Camera(
+                        this.width/2,
+                        this.height/2,
+                        w,
+                        h,
+                        this.width,
+                        this.height
+                    );
+                }
+
+                addObject(object) {
+                    this.objects.push(object);
+                }
+
+                render() {
+                    this.camera.clear(this.context);
+                    this.context.fillStyle = 'blue';
+                    this.context.fillRect(
+                        this.getLeftBound(),
+                        this.getUpperBound(),
+                        this.getRightBound(),
+                        this.getLowerBound()
+                    );
+                    this.objects.forEach(function (object) {
+                        this.camera.renderObject(this.context, object);
+                    }.bind(this));
+                }
+
+                getLeftBound() {
+                    return (-this.camera.getLeftBound() < 0) ? 0 : -this.camera.getLeftBound();
+                }
+
+                getRightBound() {
+                    return (this.camera.getRightBound() < this.width) ? this.camera.w : this.camera.w - (this.camera.getRightBound() - this.width);
+                }
+
+                getUpperBound() {
+                    return (-this.camera.getUpperBound() < 0) ? 0 : -this.camera.getUpperBound();
+                }
+
+                getLowerBound() {
+                    return (this.camera.getLowerBound() < this.height) ? this.camera.h : this.camera.h - (this.camera.getLowerBound() - this.height);
+                }
+            }
+
+            var App = {
+                canvas: null,
+                c_cxt: null,
+                fps: 30,
+                panSpeed: 3,
+                world: null,
+                keys: {
+                    w: false,
+                    a: false,
+                    s: false,
+                    d: false
+                },
+
+                initialize: function() {
+                    this.canvas = document.getElementById('game-canvas');
+                    this.c_cxt = this.canvas.getContext('2d');
+                    this.initControls();
+                    this.initWorld();
+                    setInterval(this.update.bind(this), 1000/this.fps);
+                },
+
+                initControls: function() {
+                    this.canvas.addEventListener('wheel', this.handleScroll.bind(this));
+                    document.addEventListener('keydown', this.handleWASD.bind(this));
+                    document.addEventListener('keyup', this.handleWASD.bind(this));
+                },
+
+                initWorld: function() {
+                    this.world = new World(this.c_cxt, 2000, 2000);
+                    this.world.initCamera(this.canvas.width, this.canvas.height);
+                    this.world.camera.setPanSpeed(this.panSpeed);
+                    var bot = new Bot(
+                        this.world.width/2,
+                        this.world.height/2,
+                        10,
+                        10,
+                        this.world.width,
+                        this.world.height
+                    );
+                    this.world.addObject(bot);
+                    this.addWalls();
+                },
+
+                addWalls: function() {
+                    var block = 200;
+                    var width = 10;
+                    for (var i=0;i<100;i++) {
+                        var x = i % width;
+                        var y = Math.floor(i/width);
+                        this.world.addObject(new Wall(
+                            Math.random() * block + (block*x),
+                            Math.random() * block + (block*y),
+                            Math.random() * (100 - 20) + 20,
+                            Math.random() * (100 - 20) + 20,
+                            this.world.width,
+                            this.world.height
+                        ));
+                    }
+                },
+
+                update: function() {
+                    this.world.camera.move(
+                        this.keys.w,
+                        this.keys.a,
+                        this.keys.s,
+                        this.keys.d
+                    );
+                    this.world.render();
+                },
+
+                handleScroll: function(e) {
+
+                },
+
+                handleWASD: function(e) {
+                    if (!this.keys.hasOwnProperty(e.key)) {
+                        return;
+                    }
+                    this.keys[e.key] = e.type == 'keydown';
+                },
+            };
+            window.onload=function() {
+                App.initialize();
+            }
+        </script>
+    </body>
+</html>
