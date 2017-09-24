@@ -27,6 +27,28 @@ class WorldObject {
 
 }
 
+class Sensor {
+
+    constructor(r, offset, w) {
+        this.r = r;
+        this.offset = offset;
+        this.w = w;
+    }
+
+    getX(x, a) {
+        return x + Math.cos(a + this.offset) * this.r;
+    }
+
+    getY(y, a) {
+        return y + Math.sin(a + this.offset) * this.r;
+    }
+
+    render(context, x, y) {
+        context.fillStyle = 'green';
+        context.fillRect(x - this.w/2, y - this.w/2, this.w, this.w);
+    }
+}
+
 class Camera extends WorldObject {
 
     setZoom(zoom) {
@@ -80,23 +102,55 @@ class Camera extends WorldObject {
 
 class Bot extends WorldObject {
 
+    init(r) {
+        this.angle = 0;
+        this.sensors = [];
+        this.addSensor(r, 0);
+        this.addSensor(r, -1);
+        this.addSensor(r, 1);
+    }
+
+    setLookAngle(angle) {
+        this.angle = angle;
+    }
+
+    getLookAngle() {
+        return this.angle;
+    }
+
+    addSensor(r, offset) {
+        this.sensors.push(new Sensor(
+            r,
+            offset,
+            10,
+        ));
+    }
+
     render(context, x1, y1, x2, y2) {
         //Debug square
         //context.fillStyle = 'green';
         //context.fillRect(x1, y1, x2, y2);
         x1 += this.w/2;
         y1 += this.w/2;
+        var angle = this.angle;
         context.beginPath();
         context.fillStyle = 'white';
         context.arc(x1, y1, this.w/2, 0, Math.PI * 2);
         context.fill();
         context.closePath();
-        context.beginPath();
-        context.fillStyle = 'red';
-        context.moveTo(x1, y1);
-        context.lineTo(x1, y1 + this.w/2);
-        context.stroke();
-        context.closePath();
+        this.sensors.forEach(function (sensor) {
+            context.beginPath();
+            context.fillStyle = 'green';
+            context.strokeStyle = 'green';
+            context.moveTo(x1, y1);
+            context.lineTo(
+                sensor.getX(x1, angle),
+                sensor.getY(y1, angle)
+            );
+            context.stroke();
+            context.closePath();
+            sensor.render(context, sensor.getX(x1, angle), sensor.getY(y1, angle));
+        });
     }
 
 }
@@ -131,6 +185,9 @@ class World {
     }
 
     addObject(object) {
+        if(object instanceof Bot) {
+            this.bot = object;
+        }
         this.objects.push(object);
     }
 

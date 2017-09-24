@@ -8,7 +8,8 @@
         <script>
             var App = {
                 canvas: null,
-                c_cxt: null,
+                cCxt: null,
+                cPos: null,
                 fps: 30,
                 panSpeed: 3,
                 world: null,
@@ -18,10 +19,12 @@
                     s: false,
                     d: false
                 },
+                sensorDist: 100,
 
                 initialize: function() {
                     this.canvas = document.getElementById('game-canvas');
-                    this.c_cxt = this.canvas.getContext('2d');
+                    this.cCxt = this.canvas.getContext('2d');
+                    this.cPos = this.canvas.getBoundingClientRect();
                     this.initControls();
                     this.initWorld();
                     setInterval(this.update.bind(this), 1000/this.fps);
@@ -29,14 +32,16 @@
 
                 initControls: function() {
                     this.canvas.addEventListener('wheel', this.handleScroll.bind(this));
+                    this.canvas.addEventListener('mousemove', this.handleMouse.bind(this));
                     document.addEventListener('keydown', this.handleWASD.bind(this));
                     document.addEventListener('keyup', this.handleWASD.bind(this));
                 },
 
                 initWorld: function() {
-                    this.world = new World(this.c_cxt, 2000, 2000);
+                    this.world = new World(this.cCxt, 2000, 2000);
                     this.world.initCamera(this.canvas.width, this.canvas.height);
                     this.world.camera.setPanSpeed(this.panSpeed);
+                    this.addWalls();
                     var bot = new Bot(
                         this.world.width/2,
                         this.world.height/2,
@@ -45,8 +50,8 @@
                         this.world.width,
                         this.world.height
                     );
+                    bot.init(this.sensorDist);
                     this.world.addObject(bot);
-                    this.addWalls();
                 },
 
                 addWalls: function() {
@@ -78,6 +83,15 @@
 
                 handleScroll: function(e) {
 
+                },
+
+                handleMouse: function(e) {
+                    var relX = (this.world.camera.getLeftBound() + (e.clientX - this.cPos.left)) - this.world.bot.x;
+                    var relY = (this.world.camera.getUpperBound() + (e.clientY - this.cPos.top)) - this.world.bot.y;
+                    var mod = (relX < 0) ? Math.PI : 0;
+                    this.world.bot.setLookAngle(
+                        Math.atan(relY/relX) + mod
+                    );
                 },
 
                 handleWASD: function(e) {
