@@ -30,6 +30,21 @@ class WorldObject {
 class PhysicsObject extends WorldObject {
     //Bot
     //Movement
+
+    setMaxSpeed(v) {
+        this.maxV = v;
+    }
+
+    getMaxSpeed() {
+        return this.maxV;
+    }
+
+    update() {
+        this.v += this.a;
+        if (this.v > this.maxV) {
+            this.v = this.maxV;
+        }
+    }
 }
 
 class StaticObject extends WorldObject {
@@ -124,7 +139,6 @@ class Sensor {
         world.objects.forEach(function (object) {
             if (object instanceof Wall && object.contains(x, y, xs, ys)) {
                 var intersect = object.getIntersect(x, y, xs, ys, angle + this.offset);
-                console.log(intersect);
                 intersect[2] = 1 - intersect[2] / this.r;
                 collision = (intersect[2] > collision[2]) ? intersect : collision;
             }
@@ -151,13 +165,11 @@ class Sensor {
     }
 
     getColour() {
-        console.log(this.collision);
         var colour = 'rgb('
             + Math.round(((this.rgbC.r - this.rgbA.r) * this.collision) + this.rgbA.r) + ','
             + Math.round(((this.rgbC.g - this.rgbA.g) * this.collision) + this.rgbA.g) + ','
             + Math.round(((this.rgbC.b - this.rgbA.b) * this.collision) + this.rgbA.b)
             + ')';
-        console.log(colour);
         return colour;
     }
 }
