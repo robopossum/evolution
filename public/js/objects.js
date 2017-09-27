@@ -58,14 +58,12 @@ class StaticObject extends WorldObject {
     }
 
     getIntersect(x, y, x1, y1, angle) {
-        var intersect = this.getXIntersect(x, y, angle);
-        if (intersect[1] > this.getLowerBound() || intersect[1] < this.getUpperBound()) {
-            intersect = this.getYIntersect(x, y, angle);
-            if (intersect[0] < this.getLeftBound() || intersect[0] > this.getRightBound()) {
-                intersect = [0,0,0];
-            }
+        var intersectX = this.getXIntersect(x, y, angle);
+        var intersectY = this.getYIntersect(x, y, angle);
+        if (intersectX[2] < intersectY[2]) {
+            return intersectX;
         }
-        return intersect;
+        return intersectY;
     }
 
     getYIntersect(x, y, angle) {
@@ -78,6 +76,9 @@ class StaticObject extends WorldObject {
         id = (y1 - y) / Math.sin(angle);
         ix = x + ((y1 - y) / Math.tan(angle));
         iy = y1;
+        if (ix < this.getLeftBound() || ix > this.getRightBound()) {
+            return [0, 0, 100];
+        }
         return [ix, iy, id];
     }
 
@@ -91,6 +92,9 @@ class StaticObject extends WorldObject {
         id = (x1 - x) / Math.cos(angle);
         ix = x1;
         iy = y + ((x1 - x) * Math.tan(angle));
+        if (iy > this.getLowerBound() || iy < this.getUpperBound()) {
+            return [0, 0, 100];
+        }
         return [ix, iy, id];
     }
 }
@@ -150,7 +154,7 @@ class Sensor {
         console.log(this.collision);
         var colour = 'rgb('
             + Math.round(((this.rgbC.r - this.rgbA.r) * this.collision) + this.rgbA.r) + ','
-            + Math.round(((this.rgbC.g - this.rgbC.g) * this.collision) + this.rgbA.g) + ','
+            + Math.round(((this.rgbC.g - this.rgbA.g) * this.collision) + this.rgbA.g) + ','
             + Math.round(((this.rgbC.b - this.rgbA.b) * this.collision) + this.rgbA.b)
             + ')';
         console.log(colour);
