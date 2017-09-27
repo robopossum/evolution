@@ -36,40 +36,62 @@ class StaticObject extends WorldObject {
     //Wall
     //Collisions
 
-    contains(x, y) {
-        return this.containsX(x)
-            && this.containsY(y);
+    contains(x, y, x1, y1) {
+        return this.containsX(x, x1)
+            && this.containsY(y, y1);
     }
 
-    containsX(x) {
-        return this.getLeftBound() < x
-            && this.getRightBound() > x;
+    containsX(x, x1) {
+        var min = Math.min.apply(Math, [x, x1]);
+        var max = Math.max.apply(Math, [x, x1]);
+        return (min < this.getLeftBound() && this.getLeftBound() < max)
+            || (min < this.getRightBound() && this.getRightBound() < max)
+            || (this.getLeftBound() < min && this.getRightBound() > max);
     }
 
-    containsY(y) {
-        return this.getUpperBound() < y
-            && this.getLowerBound() > y;
+    containsY(y, y1) {
+        var min = Math.min.apply(Math, [y, y1]);
+        var max = Math.max.apply(Math, [y, y1]);
+        return (min < this.getUpperBound() && this.getUpperBound() < max)
+            || (min < this.getLowerBound() && this.getLowerBound() < max)
+            || (this.getUpperBound() < min && this.getLowerBound() > max);
     }
 
     getIntersect(x, y, x1, y1, angle) {
-        if (this.containsX(x) && this.containsX(x1)) {
-            return this.getYIntersect(y, angle);
+        var intersect = this.getXIntersect(x, y, angle);
+        if (intersect[1] > this.getLowerBound() || intersect[1] < this.getUpperBound()) {
+            intersect = this.getYIntersect(x, y, angle);
+            if (intersect[0] < this.getLeftBound() || intersect[0] > this.getRightBound()) {
+                intersect = [0,0,0];
+            }
         }
-        return this.getXIntersect(x, angle);
+        return intersect;
     }
 
-    getYIntersect(y, angle) {
+    getYIntersect(x, y, angle) {
+        var ix, iy, id, y1;
         if (y < this.getUpperBound()) {
-            return (this.getUpperBound() - y) / Math.sin(Math.abs(angle));
+            y1 = this.getUpperBound();
+        } else {
+            y1 = this.getLowerBound();
         }
-        return (y - this.getLowerBound()) / Math.sin(Math.abs(angle));
+        id = (y1 - y) / Math.sin(angle);
+        ix = x + ((y1 - y) / Math.tan(angle));
+        iy = y1;
+        return [ix, iy, id];
     }
 
-    getXIntersect(x, angle) {
+    getXIntersect(x, y, angle) {
+        var ix, iy, id, x1;
         if (x < this.getLeftBound()) {
-            return (this.getLeftBound() - x) / Math.cos(angle);
+            x1 = this.getLeftBound();
+        } else {
+            x1 = this.getRightBound();
         }
-        return (this.getRightBound() - x) / Math.cos(angle);
+        id = (x1 - x) / Math.cos(angle);
+        ix = x1;
+        iy = y + ((x1 - x) * Math.tan(angle));
+        return [ix, iy, id];
     }
 }
 
@@ -92,16 +114,20 @@ class Sensor {
     }
 
     isColliding(world, x, y, angle) {
-        var collision = 0.0;
+        var collision = [0,0,0];
         var xs = this.getX(x, angle);
         var ys = this.getY(y, angle);
         world.objects.forEach(function (object) {
-            if (object instanceof Wall && object.contains(xs, ys)) {
-                var intersect = 1 - (object.getIntersect(x, y, xs, ys, angle + this.offset) / this.r);
-                collision = (intersect > collision) ? intersect : collision;
+            if (object instanceof Wall && object.contains(x, y, xs, ys)) {
+                var intersect = object.getIntersect(x, y, xs, ys, angle + this.offset);
+                console.log(intersect);
+                intersect[2] = 1 - intersect[2] / this.r;
+                collision = (intersect[2] > collision[2]) ? intersect : collision;
             }
         }.bind(this));
-        this.collision = collision;
+        this.collisionX = collision[0] || this.getX(x, angle);
+        this.collisionY = collision[1] || this.getY(y, angle);
+        this.collision = collision[2] || 0.0;
     }
 
     getX(x, a) {
@@ -232,13 +258,13 @@ class Bot extends WorldObject {
             context.strokeStyle = 'rgb(60, 140, 75)';
             context.moveTo(x1, y1);
             context.lineTo(
-                sensor.getX(x1, angle),
-                sensor.getY(y1, angle)
+                x1 + (sensor.collisionX - this.x),
+                y1 + (sensor.collisionY - this.y)
             );
             context.stroke();
             context.closePath();
-            sensor.render(context, sensor.getX(x1, angle), sensor.getY(y1, angle));
-        });
+            sensor.render(context, x1 + (sensor.collisionX - this.x), y1 + (sensor.collisionY - this.y));
+        }.bind(this));
     }
 
 }
