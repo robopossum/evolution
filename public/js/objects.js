@@ -27,26 +27,6 @@ class WorldObject {
 
 }
 
-class PhysicsObject extends WorldObject {
-    //Bot
-    //Movement
-
-    setMaxSpeed(v) {
-        this.maxV = v;
-    }
-
-    getMaxSpeed() {
-        return this.maxV;
-    }
-
-    update() {
-        this.v += this.a;
-        if (this.v > this.maxV) {
-            this.v = this.maxV;
-        }
-    }
-}
-
 class StaticObject extends WorldObject {
     //Wall
     //Collisions
@@ -229,10 +209,23 @@ class Bot extends WorldObject {
 
     init(r) {
         this.angle = 0;
+        this.a = 0;
+        this.v = 0;
+        this.maxV = 10;
         this.sensors = [];
         this.addSensor(r, 0);
         this.addSensor(r, -1);
         this.addSensor(r, 1);
+    }
+
+    update(world) {
+        this.v += this.a;
+        if (this.v > this.maxV) {
+            this.v = this.maxV;
+        }
+        this.x += this.v * Math.cos(this.angle);
+        this.y += this.v * Math.sin(this.angle);
+        this.sense(world);
     }
 
     sense(world) {
@@ -247,6 +240,14 @@ class Bot extends WorldObject {
 
     getLookAngle() {
         return this.angle;
+    }
+
+    setMaxSpeed(v) {
+        this.maxV = v;
+    }
+
+    getMaxSpeed() {
+        return this.maxV;
     }
 
     addSensor(r, offset) {

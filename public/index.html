@@ -17,7 +17,9 @@
                     w: false,
                     a: false,
                     s: false,
-                    d: false
+                    d: false,
+                    ArrowUp: false,
+                    ArrowDown: false
                 },
                 sensorDist: 100,
 
@@ -34,8 +36,8 @@
                 initControls: function() {
                     this.canvas.addEventListener('wheel', this.handleScroll.bind(this));
                     this.canvas.addEventListener('mousemove', this.handleMouse.bind(this));
-                    document.addEventListener('keydown', this.handleWASD.bind(this));
-                    document.addEventListener('keyup', this.handleWASD.bind(this));
+                    document.addEventListener('keydown', this.handleKeys.bind(this));
+                    document.addEventListener('keyup', this.handleKeys.bind(this));
                 },
 
                 initWorld: function() {
@@ -79,7 +81,14 @@
                         this.keys.s,
                         this.keys.d
                     );
-                    this.world.bot.sense(this.world);
+                    if (this.keys.ArrowUp) {
+                        this.world.bot.a = 1.0;
+                    } else if (this.keys.ArrowDown) {
+                        this.world.bot.a = -1.0;
+                    } else {
+                        this.world.bot.a = 0;
+                    }
+                    this.world.bot.update(this.world);
                     this.world.render();
                 },
 
@@ -96,7 +105,7 @@
                     );
                 },
 
-                handleWASD: function(e) {
+                handleKeys: function(e) {
                     if (!this.keys.hasOwnProperty(e.key)) {
                         return;
                     }
