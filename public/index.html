@@ -11,7 +11,7 @@
                 cCxt: null,
                 cPos: null,
                 fps: 30,
-                panSpeed: 3,
+                panSpeed: 10,
                 world: null,
                 keys: {
                     w: false,
@@ -19,7 +19,9 @@
                     s: false,
                     d: false,
                     ArrowUp: false,
-                    ArrowDown: false
+                    ArrowDown: false,
+                    ArrowLeft: false,
+                    ArrowRight: false,
                 },
                 sensorDist: 100,
 
@@ -35,7 +37,7 @@
 
                 initControls: function() {
                     this.canvas.addEventListener('wheel', this.handleScroll.bind(this));
-                    this.canvas.addEventListener('mousemove', this.handleMouse.bind(this));
+                    //this.canvas.addEventListener('mousemove', this.handleMouse.bind(this));
                     document.addEventListener('keydown', this.handleKeys.bind(this));
                     document.addEventListener('keyup', this.handleKeys.bind(this));
                 },
@@ -58,9 +60,9 @@
                 },
 
                 addWalls: function() {
-                    var block = 200;
-                    var width = 10;
-                    for (var i=0;i<100;i++) {
+                    var block = 1000;
+                    var width = 2;
+                    for (var i=0;i<4;i++) {
                         var x = i % width;
                         var y = Math.floor(i/width);
                         this.world.addObject(new Wall(
@@ -87,6 +89,13 @@
                         this.world.bot.a = -1.0;
                     } else {
                         this.world.bot.a = 0;
+                    }
+                    if (this.keys.ArrowRight) {
+                        this.world.bot.rA = Math.PI / 180;
+                    } else if (this.keys.ArrowLeft) {
+                        this.world.bot.rA = Math.PI / -180;
+                    } else {
+                        this.world.bot.rA = 0;
                     }
                     this.world.bot.update(this.world);
                     this.world.render();
