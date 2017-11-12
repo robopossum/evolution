@@ -17,8 +17,8 @@ class Camera extends WorldObject {
     }
 
     move(up, left, down, right) {
-        this.x += (right - left) * this.panSpeed;
-        this.y += (down - up) * this.panSpeed;
+        this.pos.x += (right - left) * this.panSpeed;
+        this.pos.y += (down - up) * this.panSpeed;
     }
 
     shouldRender(object) {

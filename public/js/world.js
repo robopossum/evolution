@@ -9,12 +9,9 @@ class World {
 
     initCamera(w, h) {
         this.camera = new Camera(
-            this.width/2,
-            this.height/2,
-            w,
-            h,
-            this.width,
-            this.height
+            new Vector(this.width/2, this.height/2),
+            new Vector(w, h),
+            new Vector(this.width, this.height)
         );
     }
 
@@ -44,7 +41,7 @@ class World {
     }
 
     getRightBound() {
-        return (this.camera.getRightBound() < this.width) ? this.camera.w : this.camera.w - (this.camera.getRightBound() - this.width);
+        return (this.camera.getRightBound() < this.width) ? this.camera.size.x : this.camera.size.x - (this.camera.getRightBound() - this.width);
     }
 
     getUpperBound() {
@@ -52,6 +49,6 @@ class World {
     }
 
     getLowerBound() {
-        return (this.camera.getLowerBound() < this.height) ? this.camera.h : this.camera.h - (this.camera.getLowerBound() - this.height);
+        return (this.camera.getLowerBound() < this.height) ? this.camera.size.y : this.camera.size.y - (this.camera.getLowerBound() - this.height);
     }
 }

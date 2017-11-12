@@ -1,4 +1,6 @@
 var objects = [
+    'vector',
+    'rigidBody',
     'worldObject',
     'staticObject',
     'sensor',

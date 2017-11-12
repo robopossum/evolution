@@ -48,12 +48,9 @@
                     this.world.camera.setPanSpeed(this.panSpeed);
                     this.addWalls();
                     var bot = new Bot(
-                        this.world.width/2,
-                        this.world.height/2,
-                        40,
-                        40,
-                        this.world.width,
-                        this.world.height
+                        new Vector(this.world.width/2, this.world.height/2),
+                        0,
+                        10
                     );
                     bot.init(this.sensorDist);
                     this.world.addObject(bot);
@@ -66,12 +63,18 @@
                         var x = i % width;
                         var y = Math.floor(i/width);
                         this.world.addObject(new Wall(
-                            Math.random() * block + (block*x),
-                            Math.random() * block + (block*y),
-                            Math.random() * (100 - 20) + 20,
-                            Math.random() * (100 - 20) + 20,
-                            this.world.width,
-                            this.world.height
+                            new Vector(
+                                Math.random() * block + (block*x),
+                                Math.random() * block + (block*y)
+                            ),
+                            new Vector(
+                                Math.random() * (100 - 20) + 20,
+                                Math.random() * (100 - 20) + 20
+                            ),
+                            new Vector(
+                                this.world.width,
+                                this.world.height
+                            )
                         ));
                     }
                 },
@@ -84,18 +87,16 @@
                         this.keys.d
                     );
                     if (this.keys.ArrowUp) {
-                        this.world.bot.a = 1.0;
+                        this.world.bot.applyForce(new Vector(0, 1));
                     } else if (this.keys.ArrowDown) {
-                        this.world.bot.a = -1.0;
+                        this.world.bot.applyForce(new Vector(0, -1));
                     } else {
                         this.world.bot.a = 0;
                     }
                     if (this.keys.ArrowRight) {
-                        this.world.bot.rA = Math.PI / 180;
+                        this.world.bot.applyRot(Math.PI / 180);
                     } else if (this.keys.ArrowLeft) {
-                        this.world.bot.rA = Math.PI / -180;
-                    } else {
-                        this.world.bot.rA = 0;
+                        this.world.bot.applyRot(Math.PI / -180);
                     }
                     this.world.bot.update(this.world);
                     this.world.render();
