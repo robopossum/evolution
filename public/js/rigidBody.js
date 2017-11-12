@@ -35,6 +35,12 @@ class RigidBody {
         this.pos.add(this.vel);
 
         this.aVel += this.aAcc;
+        this.aVel *= 1000;
+        this.aVel = Math.trunc(this.aVel);
+        this.aVel /= 1000;
         this.angle += this.aVel;
+
+        this.force.reset();
+        this.aAcc = 0.0;
     }
 }

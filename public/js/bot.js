@@ -1,14 +1,24 @@
 class Bot extends RigidBody {
 
-    init(r) {
+    constructor(pos, angle, mass, r) {
+        super(pos, angle, mass);
         this.w = 40;
         this.h = 40;
+        this.mu = 1;
+        this.muR = 100;
         this.maxV = 10;
         this.maxRV = Math.PI / 30;
         this.sensors = [];
         //this.addSensor(r, 0);
         //this.addSensor(r, -1);
         //this.addSensor(r, 1);
+    }
+
+    update() {
+        //this.applyForce(this.calculateDrag());
+        this.applyForce(this.calculateFriction());
+        this.applyRot(this.calculateRotationalFriction());
+        super.update();
     }
 
     sense(world) {
@@ -27,6 +37,23 @@ class Bot extends RigidBody {
 
     calculateInertia() {
         this.inertia = (this.mass * (this.w/2) * (this.w/2)) / 2;
+    }
+
+    calculateDrag() {
+        return Vector.negate(
+            new Vector(
+                (this.vel.x < 0 ? -1 : 1) * (Math.pow(this.vel.x, 2) * this.mu) / 2,
+                (this.vel.y < 0 ? -1 : 1) * (Math.pow(this.vel.y, 2) * this.mu) / 2,
+            )
+        );
+    }
+
+    calculateFriction() {
+        return Vector.negate(this.vel).multiply(this.mu);
+    }
+
+    calculateRotationalFriction() {
+        return this.aVel * this.muR * -1;
     }
 
     render(context, x1, y1, x2, y2) {

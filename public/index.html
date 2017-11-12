@@ -50,9 +50,9 @@
                     var bot = new Bot(
                         new Vector(this.world.width/2, this.world.height/2),
                         0,
-                        10
+                        10,
+                        this.sensorDist
                     );
-                    bot.init(this.sensorDist);
                     this.world.addObject(bot);
                 },
 
@@ -87,16 +87,16 @@
                         this.keys.d
                     );
                     if (this.keys.ArrowUp) {
-                        this.world.bot.applyForce(new Vector(0, 1));
+                        this.world.bot.applyForce(new Vector(0, 10));
                     } else if (this.keys.ArrowDown) {
-                        this.world.bot.applyForce(new Vector(0, -1));
+                        this.world.bot.applyForce(new Vector(0, -10));
                     } else {
                         this.world.bot.a = 0;
                     }
                     if (this.keys.ArrowRight) {
-                        this.world.bot.applyRot(Math.PI / 180);
+                        this.world.bot.applyRot(Math.PI * 2);
                     } else if (this.keys.ArrowLeft) {
-                        this.world.bot.applyRot(Math.PI / -180);
+                        this.world.bot.applyRot(Math.PI * -2);
                     }
                     this.world.bot.update(this.world);
                     this.world.render();
